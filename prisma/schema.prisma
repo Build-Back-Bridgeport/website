@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model PetitionSignature {
+  id                 String   @id @default(cuid())
+  name               String?
+  email              String   @unique
+  address            String?
+  signatureData      String?  @map("signature_data")
+  registeredToVote    Boolean? @map("registered_to_vote")
+  willingToVolunteer  Boolean? @map("willing_to_volunteer")
+  signedAt            DateTime @default(now()) @map("signed_at")
+
+  @@map("petition_signatures")
+}
+
+model Plan {
+  id           String            @id @default(cuid())
+  slug         String            @unique
+  category     String?
+  sortOrder    Int               @default(0) @map("sort_order")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+  translations PlanTranslation[]
+
+  @@map("plans")
+}
+
+model PlanTranslation {
+  id       String @id @default(cuid())
+  planId   String @map("plan_id")
+  lang     String
+  markdown String @db.Text
+  plan     Plan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, lang])
+  @@map("plan_translations")
+}
